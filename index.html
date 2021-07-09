@@ -9,6 +9,7 @@
 <body>
     <h1>GitOpsConfig Converter</h1>
     <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version 1.</p>
+    <h2>Current .gitops.config.yaml:</h2>
     <textarea id="input" rows="20" cols="100">
 # Example
 deploymentConfig:
@@ -37,6 +38,9 @@ previewConfig:
 
     <h2>Result without comments:</h2>
     <pre style="background-color: lightgrey;" id="output2"></pre>
+
+    <h2>Optimized Result (ATTENTION: existing previews should be deleted before using this new config):</h2>
+    <pre style="background-color: lightgrey;" id="output3"></pre>
     <script>
         window.onload = () => {
             const inputElement = document.getElementById("input")
@@ -44,8 +48,6 @@ previewConfig:
             convert(inputElement.value)
         }
         function convert(input) {
-            const outputElement = document.getElementById("output");
-            const outputElement2 = document.getElementById("output2");
             try {
                 old = jsyaml.load(input)
                 new_config = "apiVersion: v1\n"
@@ -85,7 +87,7 @@ previewConfig:
                 new_config += `    repository: ${old.deploymentConfig.repository}\n`
 
                 new_config += `#   branch: master  # optional (defaults to repo's default branch)\n`
-                new_config += `#   namespace: my-app-{PREVIEW_ID}-dev  # optional (defaults to '{APPLICATION_NAME}-{PREVIEW_ID_HASH}-preview')\n`
+                new_config += `    namespace: {APPLICATION_NAME}-{PREVIEW_ID_HASH}-preview  # optional (defaults to '{APPLICATION_NAME}-{PREVIEW_ID}-preview')\n`
 
                 new_config += `  replace:\n`
                 new_config += `    Chart.yaml:\n`
@@ -103,8 +105,15 @@ previewConfig:
                     });
                 }
 
-                outputElement.innerText = new_config
-                outputElement2.innerText = new_config.replace(/^#.*\n/gm, '').replace(/#.*$/gm, '')
+                document.getElementById("output").innerText = new_config
+
+                new_config = new_config.replace(/^#.*\n/gm, '').replace(/#.*$/gm, '')
+                document.getElementById("output2").innerText = new_config
+
+                new_config = new_config
+                    .replace('{PREVIEW_ID_HASH}', '{PREVIEW_ID}')
+                    .replace(/^\s+namespace.*\n/gm, '')
+                    document.getElementById("output3").innerText = new_config
             } catch (e) {
                 outputElement.innerText = e
                 outputElement2.innerText = ""
