@@ -34,6 +34,9 @@ previewConfig:
     </textarea>
     <h2>Result:</h2>
     <pre style="background-color: lightgrey;" id="output"></pre>
+
+    <h2>Result without comments:</h2>
+    <pre style="background-color: lightgrey;" id="output2"></pre>
     <script>
         window.onload = () => {
             const inputElement = document.getElementById("input")
@@ -42,6 +45,7 @@ previewConfig:
         }
         function convert(input) {
             const outputElement = document.getElementById("output");
+            const outputElement2 = document.getElementById("output2");
             try {
                 old = jsyaml.load(input)
                 new_config = "apiVersion: v1\n"
@@ -100,8 +104,10 @@ previewConfig:
                 }
 
                 outputElement.innerText = new_config
+                outputElement2.innerText = new_config.replace(/^#.*\n/gm, '').replace(/#.*$/gm, '')
             } catch (e) {
                 outputElement.innerText = e
+                outputElement2.innerText = ""
             }
         }
     </script>
