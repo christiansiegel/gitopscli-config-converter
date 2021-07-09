@@ -55,7 +55,7 @@ previewConfig:
                 if (old.previewConfig.route.host.template == undefined)
                     throw "previewConfig.route.host.template NOT FOUND";
                 var host_template = old.previewConfig.route.host.template.replace('{SHA256_8CHAR_BRANCH_HASH}','{PREVIEW_ID_HASH}')
-                new_config += `  host: ${host_template}\n`
+                new_config += `  host: ${host_template}  # use {PREVIEW_ID} for a human readable preview id (i.e. sanitized branch name/preview id + short hash for uniqueness) \n`
 
                 new_config += "# template:  # optional section\n"
 
