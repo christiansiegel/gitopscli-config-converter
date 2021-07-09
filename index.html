@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script
+    
+    src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"
+  ></script>
+</head>
+<body>
+    <h1>GitOpsConfig Converter</h1>
+    <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version 1.</p>
+    <textarea id="input" rows="20" cols="100">
+# Example
+deploymentConfig:
+  # The organisation name of your deployment repo
+  org: deployments
+  # The repostiory name of your deployment repo
+  repository: deployment-config-repo
+  # The name of the application (name of the folder in `.preview-templates`)
+  applicationName: app-xy
+
+previewConfig:
+  route:
+    host:
+      # Your router host
+      # {SHA256_8CHAR_BRANCH_HASH} gets replaced by a shortened hash of your preview_id
+      template: app.xy-{SHA256_8CHAR_BRANCH_HASH}.example.tld
+  replace:
+    # Paths that should be replaced in the `values.yaml`
+    - path: image.tag
+      variable: GIT_COMMIT # this is the git hash of your app repo
+    - path: route.host
+      variable: ROUTE_HOST # this is the resolved host.template from above
+    </textarea>
+    <h2>Result:</h2>
+    <pre style="background-color: lightgrey;" id="output"></pre>
+    <script>
+        window.onload = () => {
+            const inputElement = document.getElementById("input")
+            inputElement.addEventListener('input', (e) => convert(e.target.value))
+            convert(inputElement.value)
+        }
+        function convert(input) {
+            const outputElement = document.getElementById("output");
+            try {
+                old = jsyaml.load(input)
+                new_config = "apiVersion: v1\n"
+
+                if (old.deploymentConfig.applicationName == undefined)
+                    throw "deploymentConfig.applicationName NOT FOUND";
+                new_config += `applicationName: ${old.deploymentConfig.applicationName}\n`
+
+                new_config += "previewConfig:\n"
+
+                if (old.previewConfig.route.host.template == undefined)
+                    throw "previewConfig.route.host.template NOT FOUND";
+                var host_template = old.previewConfig.route.host.template.replace('{SHA256_8CHAR_BRANCH_HASH}','{PREVIEW_ID_HASH}')
+                new_config += `  host: ${host_template}\n`
+
+                new_config += "# template:  # optional section\n"
+
+                if (old.deploymentConfig.org == undefined)
+                    throw "deploymentConfig.org NOT FOUND";
+                new_config += `#   organisation: ${old.deploymentConfig.org}  # optional (defaults to target.organisation)\n`
+
+                if (old.deploymentConfig.repository == undefined)
+                    throw "deploymentConfig.repository NOT FOUND";
+                new_config += `#   repository: ${old.deploymentConfig.repository}  # optional (defaults to target.repository)\n`
+
+                new_config += `#   branch: master  # optional (defaults to target.branch)\n`
+                new_config += `#   path: .custom-template-folder/{APPLICATION_NAME}  # optional (defaults to '.preview-templates/{APPLICATION_NAME}')\n`
+                    
+                new_config += "  target:\n"
+
+                if (old.deploymentConfig.org == undefined)
+                    throw "deploymentConfig.org NOT FOUND";
+                new_config += `    organisation: ${old.deploymentConfig.org}\n`
+
+                if (old.deploymentConfig.repository == undefined)
+                    throw "deploymentConfig.repository NOT FOUND";
+                new_config += `    repository: ${old.deploymentConfig.repository}\n`
+
+                new_config += `#   branch: master  # optional (defaults to repo's default branch)\n`
+                new_config += `#   namespace: my-app-{PREVIEW_ID}-dev  # optional (defaults to '{APPLICATION_NAME}-{PREVIEW_ID_HASH}-preview')\n`
+
+                new_config += `  replace:\n`
+                new_config += `    Chart.yaml:\n`
+                new_config += `      - path: name\n`
+                new_config += `        value: {PREVIEW_NAMESPACE}\n`
+
+                if (old.previewConfig.replace != undefined && old.previewConfig.replace.length > 0) {
+                    new_config += `    values.yaml:\n`
+                    old.previewConfig.replace.forEach(replacement => {
+                        new_config += `      - path: ${replacement.path}\n`
+                        const variable = replacement.variable
+                            .replace("ROUTE_HOST", "PREVIEW_HOST")
+                            .replace("GIT_COMMIT", "GIT_HASH")
+                        new_config += `        value: {${variable}}\n`
+                    });
+                }
+
+                outputElement.innerText = new_config
+            } catch (e) {
+                outputElement.innerText = e
+            }
+        }
+    </script>
+</body>
+</html>
