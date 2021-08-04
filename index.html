@@ -91,6 +91,7 @@ previewConfig:
 
                 new_config += `#   branch: master  # optional (defaults to repo's default branch)\n`
                 new_config += `    namespace: \${APPLICATION_NAME}-\${PREVIEW_ID_HASH}-preview  # optional (defaults to '\${APPLICATION_NAME}-\${PREVIEW_ID}-\${PREVIEW_ID_HASH}-preview')\n`
+                new_config += `#   namespaceMaxLength: 63                                     # optional (defaults to 53)\n`                 
 
                 new_config += `  replace:\n`
                 new_config += `    Chart.yaml:\n`
