@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>GitOpsConfig Converter</h1>
-    <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version 1.</p>
+    <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version v2_beta.</p>
     <h2>Current .gitops.config.yaml:</h2>
     <textarea id="input" rows="20" cols="100">
 # Example
@@ -50,7 +50,7 @@ previewConfig:
         function convert(input) {
             try {
                 old = jsyaml.load(input)
-                new_config = "apiVersion: v1\n"
+                new_config = "apiVersion: v2_beta\n"
 
                 if (old.deploymentConfig.applicationName == undefined)
                     throw "deploymentConfig.applicationName NOT FOUND";
@@ -62,8 +62,8 @@ previewConfig:
                 if (old.previewConfig.route.host.template == undefined)
                     throw "previewConfig.route.host.template NOT FOUND";
                 var host_template = old.previewConfig.route.host.template
-                    .replace('{SHA256_8CHAR_BRANCH_HASH}','{PREVIEW_ID_HASH}')
-                    .replace(`${applicationName}-{PREVIEW_ID_HASH}`, '{PREVIEW_NAMESPACE}')
+                    .replace('{SHA256_8CHAR_BRANCH_HASH}','${PREVIEW_ID_HASH}')
+                    .replace(`${applicationName}-\${PREVIEW_ID_HASH}`, '${PREVIEW_NAMESPACE}')
                 new_config += `  host: ${host_template}\n`
 
                 new_config += "# template:  # optional section\n"
@@ -77,7 +77,7 @@ previewConfig:
                 new_config += `#   repository: ${old.deploymentConfig.repository}  # optional (defaults to target.repository)\n`
 
                 new_config += `#   branch: master  # optional (defaults to target.branch)\n`
-                new_config += `#   path: .custom-template-folder/{APPLICATION_NAME}  # optional (defaults to '.preview-templates/{APPLICATION_NAME}')\n`
+                new_config += `#   path: .custom-template-folder/\${APPLICATION_NAME}  # optional (defaults to '.preview-templates/\${APPLICATION_NAME}')\n`
                     
                 new_config += "  target:\n"
 
@@ -90,12 +90,12 @@ previewConfig:
                 new_config += `    repository: ${old.deploymentConfig.repository}\n`
 
                 new_config += `#   branch: master  # optional (defaults to repo's default branch)\n`
-                new_config += `    namespace: {APPLICATION_NAME}-{PREVIEW_ID_HASH}-preview  # optional (defaults to '{APPLICATION_NAME}-{PREVIEW_ID}-{PREVIEW_ID_HASH}-preview')\n`
+                new_config += `    namespace: \${APPLICATION_NAME}-\${PREVIEW_ID_HASH}-preview  # optional (defaults to '\${APPLICATION_NAME}-\${PREVIEW_ID}-\${PREVIEW_ID_HASH}-preview')\n`
 
                 new_config += `  replace:\n`
                 new_config += `    Chart.yaml:\n`
                 new_config += `      - path: name\n`
-                new_config += `        value: {PREVIEW_NAMESPACE}\n`
+                new_config += `        value: \${PREVIEW_NAMESPACE}\n`
 
                 if (old.previewConfig.replace != undefined && old.previewConfig.replace.length > 0) {
                     new_config += `    values.yaml:\n`
@@ -104,7 +104,7 @@ previewConfig:
                         const variable = replacement.variable
                             .replace("ROUTE_HOST", "PREVIEW_HOST")
                             .replace("GIT_COMMIT", "GIT_HASH")
-                        new_config += `        value: {${variable}}\n`
+                        new_config += `        value: \${${variable}}\n`
                     });
                 }
 
@@ -114,7 +114,7 @@ previewConfig:
                 document.getElementById("output2").innerText = new_config
 
                 new_config = new_config
-                    .replace('{PREVIEW_ID_HASH}', '{PREVIEW_ID}-{PREVIEW_ID_HASH}')
+                    .replace('${PREVIEW_ID_HASH}', '${PREVIEW_ID}-${PREVIEW_ID_HASH}')
                     .replace(/^\s+namespace.*\n/gm, '')
                     document.getElementById("output3").innerText = new_config
             } catch (e) {
