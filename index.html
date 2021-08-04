@@ -90,7 +90,7 @@ previewConfig:
                 new_config += `    repository: ${old.deploymentConfig.repository}\n`
 
                 new_config += `#   branch: master  # optional (defaults to repo's default branch)\n`
-                new_config += `    namespace: \${APPLICATION_NAME}-\${PREVIEW_ID_HASH}-preview  # optional (defaults to '\${APPLICATION_NAME}-\${PREVIEW_ID}-\${PREVIEW_ID_HASH}-preview')\n`
+                new_config += `    namespace: \${APPLICATION_NAME}-\${PREVIEW_ID_HASH}-preview  # optional (defaults to '\${APPLICATION_NAME}-\${PREVIEW_ID}-\${PREVIEW_ID_HASH_SHORT}-preview')\n`
                 new_config += `#   namespaceMaxLength: 63                                     # optional (defaults to 53)\n`                 
 
                 new_config += `  replace:\n`
@@ -115,7 +115,7 @@ previewConfig:
                 document.getElementById("output2").innerText = new_config
 
                 new_config = new_config
-                    .replace('${PREVIEW_ID_HASH}', '${PREVIEW_ID}-${PREVIEW_ID_HASH}')
+                    .replace('${PREVIEW_ID_HASH}', '${PREVIEW_ID}-${PREVIEW_ID_HASH_SHORT}')
                     .replace(/^\s+namespace.*\n/gm, '')
                     document.getElementById("output3").innerText = new_config
             } catch (e) {
