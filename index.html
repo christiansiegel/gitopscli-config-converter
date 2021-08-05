@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script
-    
-    src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"
-  ></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 </head>
 <body>
     <h1>GitOpsConfig Converter</h1>
-    <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version v2_beta.</p>
+    <p>Convert initial .gitops.config.yaml of <a href="https://baloise.github.io/gitopscli/">https://baloise.github.io/gitopscli/</a> to API version v2.</p>
     <h2>Current .gitops.config.yaml:</h2>
     <textarea id="input" rows="20" cols="100">
 # Example
@@ -50,7 +47,7 @@ previewConfig:
         function convert(input) {
             try {
                 old = jsyaml.load(input)
-                new_config = "apiVersion: v2_beta\n"
+                new_config = "apiVersion: v2\n"
 
                 if (old.deploymentConfig.applicationName == undefined)
                     throw "deploymentConfig.applicationName NOT FOUND";
