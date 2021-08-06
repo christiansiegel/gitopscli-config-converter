@@ -116,8 +116,9 @@ previewConfig:
                     .replace(/^\s+namespace.*\n/gm, '')
                     document.getElementById("output3").innerText = new_config
             } catch (e) {
-                outputElement.innerText = e
-                outputElement2.innerText = ""
+                document.getElementById("output").innerText = e
+                document.getElementById("output2").innerText = ""
+                document.getElementById("output3").innerText = ""
             }
         }
     </script>
